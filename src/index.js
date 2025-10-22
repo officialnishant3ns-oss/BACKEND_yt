@@ -1,9 +1,11 @@
 // require('dotenv').config({path:'./env'})
+import express from 'express'
+const app= express()
 
-import dotenv from "dotenv"
+// database connection there
 import connectdb from "./DB/index.js"
-
-dotenv.config({
+import dotenv from "dotenv"
+ dotenv.config({
     path: './env'
 })
 connectdb()
@@ -20,12 +22,7 @@ connectdb()
     .catch((error) => {
         console.log("mongo DB connection failed", error);
     });
-
-
-
-
-
-
+    
 /* in this particular file that goiing to be stored ; ;   ;
            import mongoose, { connect } from "mongoose";
           import { DB_NAME } from "./constants";
@@ -39,7 +36,7 @@ connectdb()
                 throw error
             })
 
-            app.listen(process.env.PORT, () => {
+            app.listen(process.env.PORT, () => {  //ye try me lete hai
                 console.log(`App listening on server at the ${process.env.PORT}`)
             })
 

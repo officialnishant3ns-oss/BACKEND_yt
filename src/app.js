@@ -20,4 +20,4 @@ app.use(express.static("public"))  //public static for public
 app.use(cookieParser())
 
 
-export  { app }  //export of app there
+export  { app } 
