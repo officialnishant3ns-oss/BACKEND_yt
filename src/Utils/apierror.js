@@ -13,7 +13,7 @@ class apierror extends Error{
     this.error=error
 
 
-    if(stack){
+    if(stack){      // may write same as like that there >>.>> some info learn about  that
         this.stack=stack
     }else{
        error.capturestacktrace(this ,this.constructor)

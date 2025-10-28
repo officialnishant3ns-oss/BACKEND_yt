@@ -5,8 +5,8 @@ import cors from 'cors'
 const app = express()
 
 app.use(cors({    //for set of cors
-    origin:process.env.CORS_ORIGIN ,
-    Credential:true
+      origin: process.env.CORS_ORIGIN,
+    credentials: true
 }))
 app.use(express.json({  //data from form
     limit:"16kb"
@@ -23,6 +23,6 @@ app.use(cookieParser())
 import userrouter from '../src/Routes/user.routes.js'
 
 //routes declaration
-app.use('api/v1/user',userrouter)
+app.use('/api/v1/user', userrouter)
 
 export  { app } 

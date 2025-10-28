@@ -1,4 +1,5 @@
-const asyncHandler = async(requestHandler)=>{
+
+const asyncHandler = (requestHandler)=>{
   return  (req,res,next)=>{
         Promise.resolve(requestHandler(req,res,next))
         .catch((error)=>next(error))
@@ -7,7 +8,7 @@ const asyncHandler = async(requestHandler)=>{
 export {asyncHandler} 
 
 /*
-//try and cathch vala hai ye method ji
+//try and catch vala hai ye method ji
 const asyncHandler = (fn)=> async(req,res,next)=>{ // fuction pases to another async function
     try{
        await fn(req,res,next)
