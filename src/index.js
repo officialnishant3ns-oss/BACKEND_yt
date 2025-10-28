@@ -1,7 +1,8 @@
 // require('dotenv').config({path:'./env'})
-import express from 'express'
-const app= express()
+// import express from 'express'
+// const app= express()
 
+import { app } from './app.js'
 // database connection there
 import connectdb from "./DB/index.js"
 import dotenv from "dotenv"
@@ -22,6 +23,10 @@ connectdb()
     .catch((error) => {
         console.log("mongo DB connection failed", error);
     });
+    
+    app.get('/api/v1',(req,res)=>{
+        res.send('hello sir')
+    })
     
 /* in this particular file that goiing to be stored ; ;   ;
            import mongoose, { connect } from "mongoose";
