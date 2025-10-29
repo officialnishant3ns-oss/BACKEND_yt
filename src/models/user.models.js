@@ -29,7 +29,7 @@ const userschema = new mongoose.Schema({
     },
     avatar: {
         type: String,  //cloudinary
-        // required: true
+        required: true
     },
     coverimage: {
         type: String

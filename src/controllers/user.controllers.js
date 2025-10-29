@@ -6,8 +6,8 @@ import uploadonclodinary from '../Utils/fileUpload.js'
 import apiresponse from "../Utils/apiresponse.js"
 
 const register = asyncHandler(async (req, res) => {
-  // res.status(200).json({ message: "ok" })
-
+  
+  console.log("st")
   //get uer data from frontend >
   // check that user deytails exist or not empty >
   //check user already exist or not  validation >
@@ -23,24 +23,29 @@ const register = asyncHandler(async (req, res) => {
   const { username, email, fullname, password } = req.body
   console.log("email::", email)
 
-  // if ([username,email,fullname,password].some((field)=>
-  //   field?.trim() ===""
-  // )) {
-  //     throw new apierror(400,"Something is Missing")
-  // }
-  if (!fullname || !email || !username || !password) {
-    throw new apierror(400, "Something is missing")
+  if ([username,email,fullname,password].some((field)=>
+    field?.trim() ===""
+  )) {
+      throw new apierror(400,"Something is Missing")
   }
+  // if (!fullname || !email || !username || !password) {
+  //   throw new apierror(400, "Something is missing")
+  // }
 
-  const userexist = User.findOne({
+  const userexist = await User.findOne({
     $or: [{ username }, { email }]
   })
   if (userexist) {
     throw new apierror(409, "User with emial or Username already exist")
   }
 
-  const avatarlocalpath = req.files?.avatar[0]?.path
-  const coverimagelocalpath = req.files?.coverimage[0]?.path
+  const avatarlocalpath = await req.files?.avatar[0]?.path
+  // const coverimagelocalpath = req.files?.coverimage[0]?.path
+
+  let coverimagelocalpath ;
+  if (req.files && Array.isArray(req.files.coverimage) && req.files.coverimage.length > 0) {
+     coverimagelocalpath = req.files?.coverimage[0]?.path
+  }
 
   if (!avatarlocalpath) {
     throw new apierror(400, "Avatar is required.. ")
@@ -48,6 +53,7 @@ const register = asyncHandler(async (req, res) => {
 
   const avatar = await uploadonclodinary(avatarlocalpath)
   const coverimage = await uploadonclodinary(coverimagelocalpath)
+
   if (!avatar) {
     throw new apierror(400, "Avatar is required.. ")
   }

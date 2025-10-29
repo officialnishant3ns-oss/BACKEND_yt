@@ -19,11 +19,19 @@ const uploadonclodinary = async (localFilePath) => {
             resource_type: 'auto'
         })
         console.log("file is uploaded on clodinary", response.url)
+
+        //  fs.unlinkSync(localFilePath)
+         if (fs.existsSync(localFilePath)) {
+      fs.unlinkSync(localFilePath);
+    }
         return response
 
     } catch (error) {
 
-        fs.unlinkSync(localFilePath)
+        // fs.unlinkSync(localFilePath)
+         if (fs.existsSync(localFilePath)) {
+      fs.unlinkSync(localFilePath);
+    }
         return null
     }
 }
