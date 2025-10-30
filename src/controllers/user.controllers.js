@@ -67,7 +67,7 @@ const register = asyncHandler(async (req, res) => {
   }
 
   if (!avatarlocalpath) {
-    throw new apierror(400, "Avatar is required.. ")
+    throw new apierror(400, "Avatar local path is required.. ")
   }
 
   const avatar = await uploadonclodinary(avatarlocalpath)
@@ -114,7 +114,7 @@ const loginuser = asyncHandler(async (req, res) => {
     throw new apierror(400, "username or password requied")
   }
 
-  const user =await User.findOne({
+  const user = await User.findOne({
     $or: [{ username }, { email }]
   })
   if (!user) {
@@ -140,8 +140,8 @@ const loginuser = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .cookie("accessToken", accesstoken, option)
-    .cookie("refreshToken", refreshtoken, option)
+    .cookie("accesstoken", accesstoken, option)
+    .cookie("refreshtoken", refreshtoken, option)
     .json(
       new apiresponse(
         200,
@@ -151,4 +151,29 @@ const loginuser = asyncHandler(async (req, res) => {
     )
 
 })
-export { loginuser, register } 
+
+const logOut = asyncHandler(async (req, res) => {
+  //cookies clear
+  // refresh token remove there 
+
+  User.findByIdAndUpdate(req.user._id,
+    {
+      $set: {
+        refreshtoken: undefined
+      }
+    }, {
+    new: true
+  }
+  )
+  const option = {
+    httpOnly: true,
+    secure: true
+  }
+  return res.status(200).clearCookie("accesstoken", option)
+    .clearCookie("refreshtoken", option).json(
+      new apiresponse(200, {}, "User logged out")
+    )
+
+})
+
+export { loginuser, register, logOut } 
