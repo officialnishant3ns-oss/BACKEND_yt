@@ -9,6 +9,7 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET
 })
 
+
 const uploadonclodinary = async (localFilePath) => {
     try {
         if (!localFilePath) {
@@ -18,6 +19,7 @@ const uploadonclodinary = async (localFilePath) => {
         const response = await cloudinary.uploader.upload(localFilePath, {
             resource_type: 'auto'
         })
+        
         console.log("file is uploaded on clodinary", response.url)
 
         //  fs.unlinkSync(localFilePath)
