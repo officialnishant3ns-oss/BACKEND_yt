@@ -5,6 +5,7 @@ import { error } from "console"
 import uploadonclodinary from '../Utils/fileUpload.js'
 import apiresponse from "../Utils/apiresponse.js"
 import jwt from "jsonwebtoken"
+import { response } from "express"
 
 //method for refesh and access token there
 const accessandrefreshtokengenerate = async (userId) => {
@@ -176,8 +177,8 @@ const logOut = asyncHandler(async (req, res) => {
 })
 
 const AccesstokenRefreshtoken = asyncHandler(async (req, res) => {
-try {
-  
+  try {
+
     const incomingrefeshtoken = req.cookie.refreshtoken || req.body.refreshtoken
     if (!incomingrefeshtoken) {
       throw new apierror(401, "Unauthorised request")
@@ -189,29 +190,127 @@ try {
     if (!user) {
       throw new apierror(401, "invalid refresh token")
     }
-  
+
     if (incomingrefeshtoken != user?.refreshtoken) {
       throw new apierror(401, "invalid refresh expired token")
     }
-  
+
     const { accesstoken, newrefreshtoken } = await accessandrefreshtokengenerate(user._id)
-  
+
     const option = {
       httpOnly: true,
       secure: true
     }
-  
+
     return res.status(200).
       cookie("accesstoken", accesstoken, option).
       cookie("refreshtoken", newrefreshtoken, option).
       json(
         new apiresponse(200, { accesstoken, refreshtoken: newrefreshtoken }, "Access token refreshed there")
       )
-} catch (error) {
-  throw new apierror(401,"invalid refesh token")
-}
+  } catch (error) {
+    throw new apierror(401, "invalid refesh token")
+  }
 
 })
 
+const changeUserCurruntPassword = asyncHandler(async (req, res) => {
+  const { oldpassword, newpassword } = req.body
 
-export { loginuser, register, logOut,AccesstokenRefreshtoken } 
+  const user = await User.findOne(req.user?._id)
+
+  const isPasswordcorrect = user.isPassword(oldpassword)
+  if (!isPasswordcorrect) {
+    throw new apierror(400, "invalid old password")
+  }
+
+  user.password = newpassword
+  await user.save({ validateBeforeSave: false })
+
+  return res.status(200).json(
+    new apiresponse(200, {}, "password change successfuly")
+  )
+
+}
+)
+
+const getcorrentUSer = asyncHandler(async (req, res) => {
+  return res.status(200).json(200, req.user, "current user is fetched successfully")
+}
+)
+
+const updateAccoutDetail = asyncHandler(async (req, res) => {
+  const { fullname, email } = req.body
+
+  if (!fullname || !email) {
+    throw new apierror(400, "Something is missing, All field is requred")
+  }
+
+  const user = User.findById(req.user?._id,
+    {
+      $set: {
+        fullname: fullname,
+        email: email
+      }
+    },
+    { new: true }
+  ).select("-password")
+
+  return res.status(200).json(
+    new apiresponse(200, "Accout details Updated")
+  )
+}
+)
+
+const updateAvatar = asyncHandler(async (req, res) => {
+  const avatarlocalpath = req.file?.path
+  if (!avatarlocalpath) {
+    throw new apierror(400, "avatar files is missing")
+  }
+
+  const avatar = await uploadonclodinary(avatarlocalpath)
+  if (!avatar.url) {
+    throw new apierror(400, "Error while uploading ")
+  }
+
+  const user = User.findById(req.user?._id,
+    {
+      $set: {
+        avatar: avatar.url
+      }
+    },
+    { new: true }
+  ).select("-password")
+
+  return res.status(200).json(
+    new apiresponse(200, "avatar updated successfully", user)
+  )
+}
+)
+const updateCoverimage = asyncHandler(async (req, res) => {
+  const coverimagelocalpath = req.file?.path
+  if (!coverimagelocalpath) {
+    throw new apierror(400, "coverimage files is missing")
+  }
+
+  const coverimage = await uploadonclodinary(coverimagelocalpath)
+  if (!coverimage.url) {
+    throw new apierror(400, "Error while uploading ")
+  }
+
+  const user = User.findById(req.user?._id,
+    {
+      $set: {
+        coverimage: coverimage.url
+      }
+    },
+    { new: true }
+  ).select("-password")
+  
+  return res.status(200).json(
+    new apiresponse(200, "coverimage updated successfully", user)
+  )
+}
+)
+
+export { loginuser, register, logOut, AccesstokenRefreshtoken, getcorrentUSer, changeUserCurruntPassword, updateAccoutDetail, updateAvatar, updateCoverimage } 
