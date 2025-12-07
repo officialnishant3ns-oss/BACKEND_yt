@@ -1,13 +1,11 @@
 import { asyncHandler } from "../Utils/asynchandler.js"
 import { apierror } from "../Utils/apierror.js"
 import User from "../models/user.models.js"
-import { error } from "console"
 import uploadonclodinary from '../Utils/fileUpload.js'
 import apiresponse from "../Utils/apiresponse.js"
 import jwt from "jsonwebtoken"
-import { response } from "express"
 
-//method for refesh and access token there
+
 const accessandrefreshtokengenerate = async (userId) => {
   try {
     const user = await User.findById(userId)
@@ -22,7 +20,6 @@ const accessandrefreshtokengenerate = async (userId) => {
   }
 }
 
-//register portion
 const register = asyncHandler(async (req, res) => {
 
   //get user data from frontend >
@@ -93,7 +90,6 @@ const register = asyncHandler(async (req, res) => {
 
 })
 
-// login portion 
 const loginuser = asyncHandler(async (req, res) => {
 
   // username,email , password
@@ -146,7 +142,6 @@ const loginuser = asyncHandler(async (req, res) => {
 
 })
 
-//logout
 const logOut = asyncHandler(async (req, res) => {
   //cookies clear
   // refresh token remove there 
@@ -270,7 +265,7 @@ const updateAvatar = asyncHandler(async (req, res) => {
     throw new apierror(400, "Error while uploading ")
   }
 
-  const user =await User.findById(req.user?._id,
+  const user = await User.findById(req.user?._id,
     {
       $set: {
         avatar: avatar.url
@@ -296,7 +291,7 @@ const updateCoverimage = asyncHandler(async (req, res) => {
     throw new apierror(400, "Error while uploading ")
   }
 
-  const user =await User.findById(req.user?._id,
+  const user = await User.findById(req.user?._id,
     {
       $set: {
         coverimage: coverimage.url
@@ -311,4 +306,73 @@ const updateCoverimage = asyncHandler(async (req, res) => {
 }
 )
 
-export { loginuser, register, logOut, AccesstokenRefreshtoken, getcorrentUSer, changeUserCurruntPassword, updateAccoutDetail, updateAvatar, updateCoverimage } 
+//advanced aggregation pipeline there
+const getUserChannelProfile = asyncHandler(async (req, res) => {
+  const { username } = req.params
+  if (!username.trim()) {
+    throw new apierror(400, "Username is required")
+  }
+  const channel = await User.aggregate([
+    {
+      $match: {
+        username: username.trim()
+      }
+    },
+    {
+      $lookup: {
+        from: "Subscriptions",
+        localField: "_id",
+        foreignField: "channel",
+        as: "subscribers"
+      }
+    },
+    {
+      $lookup: {
+        from: "Subscriptions",
+        localField: "_id",
+        foreignField: "subscriber",
+        as: "subscribedchannels"
+      }
+    },
+    {
+      $addFields: {
+        subscribecount: {
+          $size: "$subscribers"
+        },
+        channelsubcribedcount: {
+          $size: "$subscribedchannels"
+        }
+      },
+      issubscribed: {
+        $cond: {
+          if: { $in: [req.user?._id, "$subscribers.subscriber"] },
+          then: true,
+          else: false,
+          subscribecount: 1,
+          channelsubcribedcount,
+          avatar: 1,
+          coverimage: 1,
+          email: 1
+
+        }
+      }
+    },
+    {
+      $project: {
+        fullname: 1,
+        username: 1,
+
+      }
+    }
+  ])
+
+  if(!channel || channel.length ===0){
+    throw new apierror (404,"Channel not found")
+  }
+  return res.status(200).json(
+    new apiresponse(200, channel[0], "Channel profile fetched successfully")
+  )
+})
+
+
+export { loginuser, register, logOut, AccesstokenRefreshtoken, getcorrentUSer, changeUserCurruntPassword, updateAccoutDetail, updateAvatar, updateCoverimage, getUserChannelProfile } 
