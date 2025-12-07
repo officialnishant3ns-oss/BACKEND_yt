@@ -5,7 +5,7 @@ const userschema = new mongoose.Schema({
     username: {
         type: String,
         required: [true, "Username is required"],
-        unique: true,
+        // unique: true,
         lowercase: true,
         trim: true,
         index: true
@@ -13,7 +13,7 @@ const userschema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
-        unique: true,
+        // unique: true,
         lowercase: true,
         trim: true,
     },
@@ -28,7 +28,7 @@ const userschema = new mongoose.Schema({
         required: [true, 'password is requred']
     },
     avatar: {
-        type: String,  //cloudinary
+        type: String,  
         required: true
     },
     coverimage: {

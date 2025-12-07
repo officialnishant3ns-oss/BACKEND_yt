@@ -25,8 +25,7 @@ const accessandrefreshtokengenerate = async (userId) => {
 //register portion
 const register = asyncHandler(async (req, res) => {
 
-  console.log("st")
-  //get uer data from frontend >
+  //get user data from frontend >
   // check that user deytails exist or not empty >
   //check user already exist or not  validation >
   //check for image check for avatar
@@ -39,28 +38,24 @@ const register = asyncHandler(async (req, res) => {
   // give response 
 
   const { username, email, fullname, password } = req.body
-  console.log("email::", email)
 
   if ([username, email, fullname, password].some((field) =>
     field?.trim() === ""
   )) {
     throw new apierror(400, "Something is Missing")
   }
-  // if (!fullname || !email || !username || !password) {
-  //   throw new apierror(400, "Something is missing")
-  // }
 
   const userexist = await User.findOne({
     $or: [{ username }, { email }]
   })
   if (userexist) {
-    throw new apierror(409, "User with emial or Username already exist")
+    throw new apierror(409, "User with email or Username already Exist")
   }
 
   const avatarlocalpath = await req.files?.avatar[0]?.path
   // const coverimagelocalpath = req.files?.coverimage[0]?.path
 
-  let coverimagelocalpath;
+  let coverimagelocalpath
   if (req.files && Array.isArray(req.files.coverimage) && req.files.coverimage.length > 0) {
     coverimagelocalpath = req.files?.coverimage[0]?.path
   }
@@ -218,7 +213,9 @@ const changeUserCurruntPassword = asyncHandler(async (req, res) => {
   const { oldpassword, newpassword } = req.body
 
   const user = await User.findOne(req.user?._id)
-
+  if (!user) {
+    throw new apierror(400, "User Does not exist")
+  }
   const isPasswordcorrect = user.isPassword(oldpassword)
   if (!isPasswordcorrect) {
     throw new apierror(400, "invalid old password")
@@ -273,7 +270,7 @@ const updateAvatar = asyncHandler(async (req, res) => {
     throw new apierror(400, "Error while uploading ")
   }
 
-  const user = User.findById(req.user?._id,
+  const user =await User.findById(req.user?._id,
     {
       $set: {
         avatar: avatar.url
@@ -287,6 +284,7 @@ const updateAvatar = asyncHandler(async (req, res) => {
   )
 }
 )
+
 const updateCoverimage = asyncHandler(async (req, res) => {
   const coverimagelocalpath = req.file?.path
   if (!coverimagelocalpath) {
@@ -298,7 +296,7 @@ const updateCoverimage = asyncHandler(async (req, res) => {
     throw new apierror(400, "Error while uploading ")
   }
 
-  const user = User.findById(req.user?._id,
+  const user =await User.findById(req.user?._id,
     {
       $set: {
         coverimage: coverimage.url
@@ -306,7 +304,7 @@ const updateCoverimage = asyncHandler(async (req, res) => {
     },
     { new: true }
   ).select("-password")
-  
+
   return res.status(200).json(
     new apiresponse(200, "coverimage updated successfully", user)
   )
